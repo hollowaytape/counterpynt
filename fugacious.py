@@ -8,6 +8,8 @@ that writes fugues, but for now I am content to find the fugue-est way of fuguei
 notes_sharps = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#']
 notes_flats =  ['A', 'Bb', 'B', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab']
 
+notes_wrong = ['B#', 'Cb', 'E#', 'Fb']
+
 # Each interval can here be defined in semitones.
 interval_value = {0: "unison", 1: "minor second", 2: "major second", 3: "minor third", 4: "major third",
                   5: "perfect fourth", 6: "tritone", 7: "perfect fifth", 8: "minor sixth",
@@ -19,10 +21,40 @@ interval_quality = ['perfect', 'dissonance', 'dissonance', 'imperfect', 'imperfe
                     'dissonance', 'dissonance', 'perfect', 'imperfect',
                     'imperfect', 'dissonance', 'dissonance', 'perfect']
 
-def interval(a, b):
-    # First, make sure they are both in the same sharps/flats category. If not raise SharpFlatCoexistenceError.
-    # Then, find the index at which notes a and b appear in the notes_X list.
-    # Then, take the difference between the two.
-    # Then, find the interval_value which corresponds to the two.
 
-# Does Inteval need to be a class? It has lots of properties (semitones, name, quality, weight).
+class Interval:
+    def __init__(self, lo, hi):
+        self.lo = lo
+        self.hi = hi
+
+        if lo in notes_wrong or hi in notes_wrong:
+            raise ValueError('Note does not exist.')          # I would rather fix the note than raise an exception...
+        if "#" in self.lo and "b" in self.hi:                 # Sharps/flats can't coexist, so replace the higher note.
+            self.hi = notes_sharps[notes_flats.index(hi)]     # Find the corresponding sharp note to the flat.
+        elif "b" in self.lo and "#" in self.hi:
+            self.hi = notes_flats[notes_sharps.index(hi)]
+
+        if "#" in lo or "#" in hi:
+            lo_index = notes_sharps.index(lo)
+            hi_index = notes_sharps.index(hi)
+            self.distance = hi_index - lo_index
+        else:
+            lo_index = notes_flats.index(lo)
+            hi_index = notes_flats.index(hi)
+            self.distance = hi_index - lo_index
+
+        self.name = interval_value[self.distance]
+        self.quality = interval_quality[self.distance]
+        # self.weight = interval_weight[distance] (not yet implemented)
+
+    def __repr__(self):
+        return self.name
+
+# Testing.
+a_to_b = Interval('C', 'D#')
+print a_to_b.lo
+print a_to_b.hi
+print a_to_b.distance
+print a_to_b.name
+print a_to_b.quality
+print a_to_b
