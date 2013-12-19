@@ -36,16 +36,8 @@ imperfects = ['minor third', 'major third', 'minor sixth', 'major sixth']
 
 class Interval:
     def __init__(self, lo, hi):
-        if lo[0] not in 'ABCDEFG' and hi[0] not in 'ABCDEFG':
-            raise ValueError("Invalid note input.")
-
         self.lo = lo
         self.hi = hi
-                                          # Maybe a separate sanitize() method would be... cleaner?
-        if lo in notes_corrected:                             # Convert invalid note names to the correct ones.
-            self.lo = notes_corrected[lo]                     # i.e. B# becomes C.
-        if hi in notes_corrected:
-            self.hi = notes_corrected[hi]
 
         if "#" in self.lo and "b" in self.hi:                 # Sharps/flats can't coexist, so replace the higher note.
             self.hi = notes_sharps[notes_flats.index(hi)]     # Find the corresponding sharp note to the flat.
@@ -97,3 +89,19 @@ print a_to_b.number
 print a_to_b.quality
 print a_to_b.weight
 print a_to_b
+
+user_subject = []
+note_input = 0
+
+print "Fugacious v0.1"
+print "Input the subject of your fugue, one note at a time."
+while True:
+    note_input = raw_input("> ")
+    if note_input[0] not in 'ABCDEFG':
+        raise ValueError('Invalid note input.')
+    if note_input in notes_corrected:
+        note_input = notes_corrected[note_input]
+        print "%s has been renamed %s." % (note_input, notes_corrected[note_input])
+
+    user_subject.append(note_input)
+    print user_subject
