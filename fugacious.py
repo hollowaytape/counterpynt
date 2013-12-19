@@ -19,6 +19,9 @@ notes_corrected = {'B#': 'C', 'Cb': 'B', 'E#': 'F', 'Fb': 'E'}
 # The letter difference between the two notes, ignoring sharps/flats, gives the interval's number.
 interval_number = ['unison', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh']
 
+# Number of semitones between notes in a scale so that each interval is major or perfect.
+diatonic_distance = [0, 2, 4, 5, 7, 9, 11, 12]
+
 # The difference in semitones, in relation to the number, gives the interval's quality.
 # A difference of 0 from the expected number of semitones, naturally, accesses index 0 of this list, "major".
 # A difference of 1 will access "augmented", -1 will access "minor", and so forth.
@@ -27,8 +30,8 @@ interval_quality_imperfect = ['major', 'augmented', 'double augmented', 'double 
 # Unison, 4th, 5th, and octave follow a slightly different nomenclature.
 interval_quality_perfect = ['perfect', 'augmented', 'double augmented', 'double diminished', 'diminished']
 
-# Number of semitones between notes in a scale so that each interval is major or perfect.
-diatonic_distance = [0, 2, 4, 5, 7, 9, 11, 12]
+perfects = ['perfect unison', 'perfect fifth', 'perfect octave']
+imperfects = ['minor third', 'major third', 'minor sixth', 'major sixth']
 
 
 class Interval:
@@ -65,25 +68,32 @@ class Interval:
                 self.semitone_distance = hi_index - lo_index
 
         self.number = interval_number[notes_naturals.index(self.hi[0]) - notes_naturals.index(self.lo[0])]
-        print self.semitone_distance
-        print self.number
-        print diatonic_distance[interval_number.index(self.number)]
+
+        distance_from_major = (self.semitone_distance - diatonic_distance[interval_number.index(self.number)])
         if self.number in ("unison", "fourth", "fifth", "octave"):
-            self.quality = interval_quality_perfect[self.semitone_distance
-                                                    - diatonic_distance[interval_number.index(self.number)]]
+            self.quality = interval_quality_perfect[distance_from_major]
         else:
-            self.quality = interval_quality_imperfect[self.semitone_distance
-                                                      - diatonic_distance[interval_number.index(self.number)]]
+            self.quality = interval_quality_imperfect[distance_from_major]
+
+        self.name = self.quality + ' ' + self.number
+
+        if self.quality == "perfect":      # Perfect consonances receive the highest weight.
+            self.weight = 2
+        elif self.name in ['minor third', 'major third', 'minor sixth', 'major sixth']:  # Imperfects receive lower.
+            self.weight = 1
+        else:                              # Dissonances are negative.
+            self.weight = -1
 
 
     def __repr__(self):
-        return self.quality + ' ' + self.number
+        return self.name
 
 # Testing.
-a_to_b = Interval('C', 'B')
+a_to_b = Interval('C', 'C')
 print a_to_b.lo
 print a_to_b.hi
 print a_to_b.semitone_distance
 print a_to_b.number
 print a_to_b.quality
+print a_to_b.weight
 print a_to_b
