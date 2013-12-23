@@ -5,6 +5,9 @@ that writes fugues, but for now I am content to find the fugue-est way of fuguei
 
 A similar project in my head is  a program that writes a countermelody given a canta firma.
 Zarlino's rules are rigid enough, right?
+
+Next steps: more test melodies, different note durations/octaves, MIDI playing, imitations, ASCII note graphics,
+            perfect fourth dissonance toggle, key signatures, three-part fugues
 """
 
 notes_naturals = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
@@ -76,32 +79,60 @@ class Interval:
         else:                              # Dissonances are negative.
             self.weight = -1
 
-
     def __repr__(self):
         return self.name
 
-# Testing.
-a_to_b = Interval('C', 'C')
-print a_to_b.lo
-print a_to_b.hi
-print a_to_b.semitone_distance
-print a_to_b.number
-print a_to_b.quality
-print a_to_b.weight
-print a_to_b
+# Test melodies.
+a_scale = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+c_scale = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
+rowboat = ['C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'D', 'E', 'E', 'E',        # "Row, Row, Row Your Boat"
+           'E', 'E', 'D', 'E', 'E', 'F', 'G', 'G', 'G', 'G', 'G', 'G',        # Each note is a triplet, no rests.
+           'C', 'C', 'C', 'G', 'G', 'G', 'E', 'E', 'E', 'C', 'C', 'C',        # Kinda awkward.
+           'G', 'G', 'F', 'E', 'E', 'D', 'C', 'C', 'C', 'C', 'C', 'C']        # Rounds are kinda like fugues though.
 
-user_subject = []
-note_input = 0
+
+def manual_input():
+    user_subject = []
+    print "Input the subject of your fugue, one note at a time. 'x' to finish."
+    while True:
+        note_input = raw_input("> ")
+        if note_input[0] not in 'ABCDEFGx':
+            raise ValueError('Invalid note input.')
+        if note_input == "x":
+            for note_index in range(0, len(user_subject)):        # Ending a fugue is not something for computers to do.
+                user_subject.append(user_subject[note_index])         # Instead, we'll simply repeat the subject twice.
+            find_fugue(user_subject)
+        if note_input in notes_corrected:
+            note_input = notes_corrected[note_input]
+            print "%s has been renamed %s." % (note_input, notes_corrected[note_input])
+
+        user_subject.append(note_input)
+        print user_subject
+
+
+def load_melody():                           # Not currently functional.
+    print "Enter the name of the melody."
+    melody = input("> ")
+    find_fugue(melody)                       # This interprets the input as a melody... hmm.
+
+
+def find_fugue(user_subject):
+    score_list = []
+    length = len(user_subject) / 2                       # Since we doubled it.
+    for stagger in range(1, length):                     # Test every amount of stagger from the 2nd to last notes.
+        weight_sum = 0
+        for note_index in (0, length):                   # Sum the weights of each interval.
+            weight_sum += Interval(user_subject[note_index], user_subject[note_index + stagger]).weight
+        score_list.append(weight_sum)
+
+    print score_list
+    print "The most consonant fugue would enter %s notes after the first." % (score_list.index(max(score_list)))
 
 print "Fugacious v0.1"
-print "Input the subject of your fugue, one note at a time."
-while True:
-    note_input = raw_input("> ")
-    if note_input[0] not in 'ABCDEFG':
-        raise ValueError('Invalid note input.')
-    if note_input in notes_corrected:
-        note_input = notes_corrected[note_input]
-        print "%s has been renamed %s." % (note_input, notes_corrected[note_input])
+print "a) Manual input b) Name of a hard-coded melody"
+input_mode = raw_input("> ")
 
-    user_subject.append(note_input)
-    print user_subject
+if 'a' in input_mode:
+    manual_input()
+elif 'b' in input_mode:
+    load_melody()
