@@ -113,7 +113,7 @@ def manual_input():
 def load_melody():                           # Not currently functional.
     print "Enter the name of the melody."
     melody = input("> ")
-    find_fugue(melody)                       # This interprets the input as a melody... hmm.
+    find_fugue(melody)                   # This interprets the input string as a melody without finding the variable...
 
 
 def find_fugue(user_subject):
