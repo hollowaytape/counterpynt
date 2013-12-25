@@ -83,12 +83,13 @@ class Interval:
         return self.name
 
 # Test melodies.
-a_scale = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
-c_scale = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
-rowboat = ['C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'D', 'E', 'E', 'E',        # "Row, Row, Row Your Boat"
-           'E', 'E', 'D', 'E', 'E', 'F', 'G', 'G', 'G', 'G', 'G', 'G',        # Each note is a triplet, no rests.
-           'C', 'C', 'C', 'G', 'G', 'G', 'E', 'E', 'E', 'C', 'C', 'C',        # Kinda awkward.
-           'G', 'G', 'F', 'E', 'E', 'D', 'C', 'C', 'C', 'C', 'C', 'C']        # Rounds are kinda like fugues though.
+songbook = {"a_scale": ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
+            "c_scale": ['C', 'D', 'E', 'F', 'G', 'A', 'B'],
+            "rowboat": ['C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 'D', 'E', 'E', 'E',   # "Row, Row, Row Your Boat"
+                        'E', 'E', 'D', 'E', 'E', 'F', 'G', 'G', 'G', 'G', 'G', 'G',   # Each note is a triplet, no rests.
+                        'C', 'C', 'C', 'G', 'G', 'G', 'E', 'E', 'E', 'C', 'C', 'C',   # Kinda awkward.
+                        'G', 'G', 'F', 'E', 'E', 'D', 'C', 'C', 'C', 'C', 'C', 'C']   # Rounds are kinda like fugues though.
+}
 
 
 def manual_input():
@@ -99,8 +100,6 @@ def manual_input():
         if note_input[0] not in 'ABCDEFGx':
             raise ValueError('Invalid note input.')
         if note_input == "x":
-            for note_index in range(0, len(user_subject)):        # Ending a fugue is not something for computers to do.
-                user_subject.append(user_subject[note_index])         # Instead, we'll simply repeat the subject twice.
             find_fugue(user_subject)
         if note_input in notes_corrected:
             note_input = notes_corrected[note_input]
@@ -112,19 +111,24 @@ def manual_input():
 
 def load_melody():                           # Not currently functional.
     print "Enter the name of the melody."
-    melody = input("> ")
-    find_fugue(melody)                   # This interprets the input string as a melody without finding the variable...
+    melody = raw_input("> ")
+    find_fugue(songbook[melody])                   # This interprets the input string as a melody without finding the variable...
 
 
 def find_fugue(user_subject):
     score_list = []
-    length = len(user_subject) / 2                       # Since we doubled it.
+    for note_index in range(0, len(user_subject)):        # Ending a fugue is not something for computers to do.
+        user_subject.append(user_subject[note_index])    # Instead, we'll simply repeat the subject twice.
+    length = len(user_subject) / 2
     for stagger in range(1, length):                     # Test every amount of stagger from the 2nd to last notes.
         weight_sum = 0
         for note_index in (0, length):                   # Sum the weights of each interval.
-            weight_sum += Interval(user_subject[note_index], user_subject[note_index + stagger]).weight
+            i = Interval(user_subject[note_index], user_subject[note_index + stagger])
+            print i.lo, i.hi, i
+            weight_sum += i.weight
         score_list.append(weight_sum)
 
+    print user_subject
     print score_list
     print "The most consonant fugue would enter %s notes after the first." % (score_list.index(max(score_list)))
 
