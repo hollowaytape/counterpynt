@@ -134,9 +134,10 @@ def find_fugue(user_subject):
     length = len(user_subject) / 2
     for stagger in range(1, length):                     # Test every amount of stagger from the 2nd to last notes.
         weight_sum = 0
-        for note_index in (0, length):                   # Sum the weights of each interval.
+        for note_index in range(0, length):                   # Sum the weights of each interval.
             i = Interval(user_subject[note_index], user_subject[note_index + stagger])
-            print i.lo, i.hi, i                          # rowboat is printing C * every note in the piece...
+            """print note_index, "note index", stagger, "staggger"
+            print i.lo, i.hi, i""" # For debugging.
             weight_sum += i.weight
         score_list.append(weight_sum)
 
