@@ -10,6 +10,8 @@ Next steps: more test melodies, different note durations/octaves, MIDI playing, 
             perfect fourth dissonance toggle, key signatures, three-part fugues
 """
 
+import time, rtmidi
+
 notes_naturals = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
 
 # Vertically aligned sharps and flats are equivalent, but can affect the interval's spelling.
@@ -35,6 +37,21 @@ interval_quality_perfect = ['perfect', 'augmented', 'double augmented', 'double 
 
 perfects = ['perfect unison', 'perfect fifth', 'perfect octave']
 imperfects = ['minor third', 'major third', 'minor sixth', 'major sixth']
+
+# Dictionary comprehension mapping each note to its MIDI notation (in octave 4).
+notes_midi = {note: 57 + notes_sharps.index(note) for note in notes_sharps}
+
+
+class Note:
+    def __init__(self, pitch, octave=4, duration=1):
+        self.pitch = pitch
+        self.octave = octave
+        self.duration = duration
+
+        self.pitch_midi = notes_midi[self.pitch] + ((self.octave - 4) * 12)
+
+    def __repr__(self):
+        return self.pitch + str(self.octave)
 
 
 class Interval:
@@ -97,25 +114,53 @@ songbook = {"a_scale": ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
             }
 
 
-def format_melody(notes):                                                # Sanity checks are now part of one function.
+def format_melody(notes):                                                # Sanity checks and objectification.
+    formatted_list = []
     for note in notes:
         if note in notes_corrected:
-            note = notes_corrected[note]                                 # Let the user know?
+            n = Note(notes_corrected[note])                              # Let the user know?
         if note == "-":                                                  # Syntax for a previous note continuing.
-            note = notes[notes.index(note) - 1]                          # Replace with the previous note's value.
-    return notes
+            n = Note(notes[notes.index(note) - 1])                       # Replace with the previous note's value.
+        else:
+            n = Note(note)
+        formatted_list.append(n)
+        print formatted_list
+    return formatted_list
+
+
+def play_melody(notes):
+    midiout = rtmidi.MidiOut()
+    available_ports = midiout.get_ports()
+
+    if available_ports:
+        midiout.open_port(0)
+    else:
+        midiout.open_virtual_port("My virtual output")
+
+    for note in notes:
+        note_on = [0x90, note.pitch_midi, 112]                                      # channel, pitch, velocity
+        note_off = [0x80, note.pitch_midi, 0]
+        midiout.send_message(note_on)
+        time.sleep(0.5)
+        midiout.send_message(note_off)
+
+    del midiout
 
 
 def manual_input():
+    # Need more forgiving syntax.
     user_subject = []
     print "Input a melody, one note at a time.\n'x' is a rest, '-' extends the previous note, 'end' to finish."
     while True:
         note_input = raw_input("> ")
-        if note_input[0] not in 'ABCDEFGx- ':
+        if note_input[0] not in 'ABCDEFGx- end':
             raise ValueError('Invalid note input.')
         if note_input == "end":
-            format_melody(user_subject)
-            find_fugue(user_subject)
+            play_melody(format_melody(user_subject))
+            print "Find the fugue? y/n"
+            yesno = raw_input("> ")
+            if "y" in yesno:
+                find_fugue(user_subject)
 
         user_subject.append(note_input)
         print user_subject
@@ -143,7 +188,7 @@ def find_fugue(user_subject):
 
     print user_subject
     print score_list
-    print "The most consonant fugue would enter %s notes after the first." % (score_list.index(max(score_list)) + 1)
+    print "The most consonant fugue would enter %s notes after the first." % score_list.index(max(score_list))
     # Multiple options for where to begin the fugue? A list of all the maxima would be nice to have.
 
 print "Fugacious v0.1"
