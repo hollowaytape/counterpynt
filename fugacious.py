@@ -10,7 +10,8 @@ Next steps: more test melodies, different note durations/octaves, MIDI playing, 
             perfect fourth dissonance toggle, key signatures, three-part fugues
 """
 
-import time, rtmidi
+import time
+import rtmidi
 
 notes_naturals = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
 
@@ -64,7 +65,7 @@ class Interval:
             self.weight = 0
 
         else:
-            if "#" in self.lo and "b" in self.hi:                 # Sharps/flats can't coexist, so replace the higher note.
+            if "#" in self.lo and "b" in self.hi:             # Sharps/flats can't coexist, so replace the higher note.
                 self.hi = notes_sharps[notes_flats.index(hi)]     # Find the corresponding sharp note to the flat.
             elif "b" in self.lo and "#" in self.hi:
                 self.hi = notes_flats[notes_sharps.index(hi)]
@@ -114,7 +115,8 @@ songbook = {"a_scale": ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
             }
 
 
-def format_melody(notes):                                                # Sanity checks and objectification.
+def format_melody(notes):
+    """Formats the strings from manual_input() and turns them into appropriate Note objects."""
     formatted_list = []
     for note in notes:
         if note in notes_corrected:
@@ -128,7 +130,8 @@ def format_melody(notes):                                                # Sanit
     return formatted_list
 
 
-def play_melody(notes):
+def play_melody(song):
+    """Takes a list of notes, or tuples of simultaneous notes, and plays them through MIDI."""
     midiout = rtmidi.MidiOut()
     available_ports = midiout.get_ports()
 
@@ -137,12 +140,20 @@ def play_melody(notes):
     else:
         midiout.open_virtual_port("My virtual output")
 
-    for note in notes:
-        note_on = [0x90, note.pitch_midi, 112]                                      # channel, pitch, velocity
-        note_off = [0x80, note.pitch_midi, 0]
-        midiout.send_message(note_on)
-        time.sleep(0.5)
-        midiout.send_message(note_off)
+    # For each "beat" (group of simultaneous notes) in the subject, make a list of note-ons/note-offs to trigger.
+    for beat in song:
+        notes_on, notes_off = ([], [])
+        for note in beat:
+            # Each MIDI message is a tuple of channel, pitch, and velocity. Channel 1 is 0x90, 2 is 0x91, etc.
+            note_on = [(0x90 + beat.index(note)), note.pitch_midi, 112]
+            notes_on.append(note_on)
+            note_off = [(0x80 + beat.index(note)), note.pitch_midi, 0]
+            notes_off.append(note_off)
+        for note in notes_on:
+            midiout.send_message(note)
+        time.sleep(0.25)
+        for note in notes_off:
+            midiout.send_message(note)
 
     del midiout
 
@@ -152,7 +163,7 @@ def manual_input():
     user_subject = []
     print "Input a melody, one note at a time.\n'x' is a rest, '-' extends the previous note, 'end' to finish."
     while True:
-        note_input = raw_input("> ")
+        note_input = upper(raw_input("> "))
         if note_input[0] not in 'ABCDEFGx- end':
             raise ValueError('Invalid note input.')
         if note_input == "end":
@@ -161,9 +172,9 @@ def manual_input():
             yesno = raw_input("> ")
             if "y" in yesno:
                 find_fugue(user_subject)
-
-        user_subject.append(note_input)
-        print user_subject
+        else:
+            user_subject.append(note_input)
+            print user_subject
 
 
 def load_melody():
