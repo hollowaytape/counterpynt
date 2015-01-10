@@ -6,8 +6,8 @@ that writes fugues, but for now I am content to find the fugue-est way of fuguei
 A similar project in my head is  a program that writes a countermelody given a canta firma.
 Zarlino's rules are rigid enough, right?
 
-Next steps: more test melodies, different note durations/octaves, MIDI playing, imitations, ASCII note graphics,
-            perfect fourth dissonance toggle, key signatures, three-part fugues
+Next steps: friendlier interface, more test melodies, different note durations/octaves, imitations, ASCII note graphics,
+            perfect fourth dissonance toggle, key signatures, three-part fugues, MIDI input
 """
 
 import time
@@ -15,22 +15,22 @@ import rtmidi
 
 notes_naturals = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
 
-# Vertically aligned sharps and flats are equivalent, but can affect the interval's spelling.
+# Vertically aligned sharps and flats are equivalent, but can affect the interval's "spelling."
 notes_sharps = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#']
 notes_flats =  ['A', 'Bb', 'B', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab']
 
-# Some notes are not valid. Here they can be corrected to a different name for the same pitch.
+# The user could enter invalid notes. If in this list, they can be corrected to a different name for the same pitch.
 notes_corrected = {'B#': 'C', 'Cb': 'B', 'E#': 'F', 'Fb': 'E'}
 
-# The letter difference between the two notes, ignoring sharps/flats, gives the interval's number.
+# The letter difference between the two notes, ignoring sharps/flats, gives the interval's number. !!! No octave.
 interval_number = ['unison', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh']
 
 # Number of semitones between notes in a scale so that each interval is major or perfect.
 diatonic_distance = [0, 2, 4, 5, 7, 9, 11, 12]
 
-# The difference in semitones, in relation to the number, gives the interval's quality.
-# A difference of 0 from the expected number of semitones, naturally, accesses index 0 of this list, "major".
-# A difference of 1 will access "augmented", -1 will access "minor", and so forth.
+"""The difference in semitones, in relation to the number, gives the interval's quality.
+A difference of 0 from the expected number of semitones, naturally, accesses index 0 of this list, "major".
+A difference of 1 will access "augmented", -1 will access "minor", and so forth."""
 interval_quality_imperfect = ['major', 'augmented', 'double augmented', 'double diminished', 'diminished', 'minor']
 
 # Unison, 4th, 5th, and octave follow a slightly different nomenclature.
@@ -53,6 +53,28 @@ class Note:
 
     def __repr__(self):
         return self.pitch + str(self.octave)
+
+
+class Rest(Note):
+    """A note that begins with a note-off message. (Does this cause any errors if no notes are currently playing?)"""
+    def __init__(self, duration=1):
+        self.pitch = None
+        self.octave = None
+        self.duration = duration
+
+    def __repr__(self):
+        return "x"
+
+
+class Sustain(Note):
+    """A note that provides no note-on or note-off MIDI message."""
+    def __init__(self, duration=1):
+        self.pitch = None
+        self.octave = None
+        self.duration = duration
+
+    def __repr__(self):
+        return "-"
 
 
 class Interval:
