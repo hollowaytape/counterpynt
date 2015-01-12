@@ -1,3 +1,7 @@
+"""
+TODO: Replace most of this with imports from mingus, then try re-implementing find_fugue().
+"""
+
 """ A program to generate a two-voice simple fugue from an inputted series of notes.
 Somehow, when writing a fugue, you have to write a melody that agrees with itself
 displaced into the future by a certain number of notes. I probably couldn't write a program
