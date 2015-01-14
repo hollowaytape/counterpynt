@@ -14,7 +14,7 @@ randomly start either on unison, fifth, or octave above
 for each note after:
     direction = opposite of cantus' previous direction (up/down)
     magnitude = opposite of cantus' previous magnitude (step/skip)
-    consonance = opposite of cantus & counterpoint's prevoius consonance (perfect/imperfect)
+    consonance = opposite of cantus & counterpoint's previous consonance (perfect/imperfect)
 
     place the same note as before
     penalty = 0
@@ -31,3 +31,10 @@ Wait, let me figure out what the priority of each of these 8 rules should be...
 """
 
 from cantus import first, second, third
+from random import randint
+
+initial = first[1][0][2].to_int() + (0, 7, 12)[randint(0, 2)]
+# first(1= the non-instrument part of the track, 0 = first bar, 2 = the note part of the bar)
+# there has to be a clearer way of accessing the note in a track...
+
+# then, add either 0, 7, or 12 semitones to it - unison, fifth, or octave
