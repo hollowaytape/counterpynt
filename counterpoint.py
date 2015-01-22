@@ -33,8 +33,17 @@ Wait, let me figure out what the priority of each of these 8 rules should be...
 from cantus import first, second, third
 from random import randint
 
-initial = first[1][0][2].to_int() + (0, 7, 12)[randint(0, 2)]
-# first(1= the non-instrument part of the track, 0 = first bar, 2 = the note part of the bar)
+cantus_first_note = first.bars[0][2].to_int()
+# 0 = first bar, 2 = the note part of the bar
 # there has to be a clearer way of accessing the note in a track...
-
+harmony_first_note = Note()
+harmony_first_note.from_int(cantus_first_note + 12)
 # then, add either 0, 7, or 12 semitones to it - unison, fifth, or octave
+# for now, just an octave up
+
+for current_note in range (len(first.bars)):
+    previous_cantus_note = first.bars[current_note - 1][2].to_int()
+    current_cantus_note = first.bars[current_note][2].to_int()
+
+    cantus_magnitude = current_cantus_note - previous_cantus_note
+    cantus_direction = cantus_magnitude > 0
