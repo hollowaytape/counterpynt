@@ -1,4 +1,4 @@
-fugacious
+counterpynt
 =========
 
-Takes a melody and generates the most consonant fugue.
+Brief experiments in procedrual music generation based on simple rules of counterpoint and fugue.
